@@ -591,6 +591,8 @@ public class ServerListScreen : mScreen, IActionListener
 
 	public static void loadIP()
 	{
+		getServerList(linkDefault);
+		return;
 		sbyte[] array = Rms.loadRMS("NRlink2");
 		if (array == null)
 		{

@@ -16,7 +16,7 @@ public class FileIO {
         } catch(IOException e) {
             e.printStackTrace();
         }
-        return null;
+        return new byte[0];
     }
 
     public static void writeFile(String url, byte[] ab) {

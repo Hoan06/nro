@@ -715,7 +715,7 @@ public class Controller {
 
         if (session.player != null) {
             // Map map = session.player.map;
-            //      PlayerDAO.updateDB(player);
+            PlayerDAO.updateDB(session.player);
             session.player.timer.cancel();
             session.player.zone.exitMap(session.player);
             session.player.zone.players.remove(session.player);

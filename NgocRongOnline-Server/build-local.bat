@@ -14,4 +14,4 @@ if errorlevel 1 (
     if exist "C:\Program Files\Java\jdk-24\bin\jar.exe" set "JAR_EXE=C:\Program Files\Java\jdk-24\bin\jar.exe"
 )
 "%JAR_EXE%" cfe dist\DragonServer.jar server.Server -C build\classes .
-pause
+if /I not "%~1"=="nopause" pause

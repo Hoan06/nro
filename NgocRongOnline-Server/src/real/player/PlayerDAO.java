@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import real.clan.ClanManager;
 import real.item.Item;
 import real.item.ItemDAO;
@@ -173,6 +175,132 @@ public class PlayerDAO {
         } catch (Exception e) {
         }
         return player;
+    }
+
+    public static void updateDB(Player player) {
+        if (player == null || player.id <= 0) {
+            return;
+        }
+
+        String updatePlayer = "UPDATE player SET power=?,vang=?,luong=?,luong_khoa=?,clan_id=?,task_id=?,head=?,gender=?,where_id=?,where_x=?,where_y=?,last_logout_time=?,itembag=?,itembox=?,itembody=?,hp_goc=?,mp_goc=?,dame_goc=?,def_goc=?,crit_goc=?,tiem_nang=?,limit_power=?,skill=?,maxluggage=?,levelBag=? WHERE id=?";
+        String updatePoint = "UPDATE player_point SET hp_goc=?,mp_goc=?,dam_goc=?,def_goc=?,crit_goc=?,tiem_nang=?,limit_power=? WHERE player_id=?";
+
+        Connection conn = null;
+        try {
+            conn = DBService.gI().getConnection();
+            conn.setAutoCommit(false);
+
+            PreparedStatement ps = conn.prepareStatement(updatePlayer);
+            ps.setLong(1, player.power);
+            ps.setInt(2, player.vang);
+            ps.setInt(3, player.ngoc);
+            ps.setInt(4, player.ngocKhoa);
+            ps.setInt(5, player.clan != null ? player.clan.id : -1);
+            ps.setInt(6, player.taskId);
+            ps.setInt(7, player.head);
+            ps.setInt(8, player.gender);
+            ps.setInt(9, player.map != null ? player.map.id : 0);
+            ps.setInt(10, player.x);
+            ps.setInt(11, player.y);
+            ps.setTimestamp(12, new Timestamp(System.currentTimeMillis()));
+            ps.setString(13, itemsToJson(player.ItemBag));
+            ps.setString(14, itemsToJson(player.ItemBox));
+            ps.setString(15, itemsToJson(player.ItemBody));
+            ps.setInt(16, player.hpGoc);
+            ps.setInt(17, player.mpGoc);
+            ps.setInt(18, player.damGoc);
+            ps.setInt(19, player.defGoc);
+            ps.setInt(20, player.critGoc);
+            ps.setLong(21, player.tiemNang);
+            ps.setInt(22, player.limitPower);
+            ps.setString(23, skillsToJson(player.skill));
+            ps.setInt(24, player.maxluggage);
+            ps.setInt(25, player.levelBag);
+            ps.setInt(26, player.id);
+            ps.executeUpdate();
+            ps.close();
+
+            ps = conn.prepareStatement(updatePoint);
+            ps.setInt(1, player.hpGoc);
+            ps.setInt(2, player.mpGoc);
+            ps.setInt(3, player.damGoc);
+            ps.setInt(4, player.defGoc);
+            ps.setInt(5, player.critGoc);
+            ps.setLong(6, player.tiemNang);
+            ps.setInt(7, player.limitPower);
+            ps.setInt(8, player.id);
+            ps.executeUpdate();
+            ps.close();
+
+            conn.commit();
+            Util.log("Saved player " + player.id + " to database");
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ignored) {
+                }
+            }
+            e.printStackTrace();
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException ignored) {
+                }
+            }
+        }
+    }
+
+    private static String itemsToJson(Item[] items) {
+        JSONArray array = new JSONArray();
+        if (items == null) {
+            return array.toJSONString();
+        }
+        for (int i = 0; i < items.length; i++) {
+            Item item = items[i];
+            if (item == null || item.id == -1) {
+                continue;
+            }
+            JSONObject object = new JSONObject();
+            object.put("index", i);
+            object.put("id", item.id);
+            object.put("quantity", item.quantity);
+
+            JSONArray options = new JSONArray();
+            if (item.itemOptions != null) {
+                for (real.item.ItemOption option : item.itemOptions) {
+                    if (option == null || option.optionTemplate == null) {
+                        continue;
+                    }
+                    JSONObject optionObject = new JSONObject();
+                    optionObject.put("id", option.optionTemplate.id);
+                    optionObject.put("param", option.param);
+                    options.add(optionObject);
+                }
+            }
+            object.put("option", options);
+            array.add(object);
+        }
+        return array.toJSONString();
+    }
+
+    private static String skillsToJson(ArrayList<Skill> skills) {
+        JSONArray array = new JSONArray();
+        if (skills == null) {
+            return array.toJSONString();
+        }
+        for (Skill skill : skills) {
+            if (skill == null) {
+                continue;
+            }
+            JSONObject object = new JSONObject();
+            object.put("id", skill.skillId);
+            object.put("point", skill.point);
+            array.add(object);
+        }
+        return array.toJSONString();
     }
 
 //    public static void updateDB(Player player) {

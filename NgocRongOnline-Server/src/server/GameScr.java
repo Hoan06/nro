@@ -58,6 +58,7 @@ public class GameScr {
         m = new Message(-77);
         m.writer().writeInt(id);
         m.writer().writeInt(icon.length);
+        m.writer().write(icon);
         m.writer().flush();
         p.session.sendMessage(m);
         m.cleanup();

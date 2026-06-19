@@ -7,6 +7,7 @@ package server;
 
 import cache.Part;
 import cache.PartImage;
+import java.io.File;
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -58,8 +59,9 @@ public class Manager {
     }
 
     private void loadConfigFile() {
-        byte[] ab = GameScr.loadFile("ninja.conf").toByteArray();
-        if (ab == null) {
+        String configFile = new File("dragonball.conf").exists() ? "dragonball.conf" : "ninja.conf";
+        byte[] ab = GameScr.loadFile(configFile).toByteArray();
+        if (ab == null || ab.length == 0) {
             System.out.println("Config file not found!");
             System.exit(0);
         }
